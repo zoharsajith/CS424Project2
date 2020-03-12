@@ -17,6 +17,9 @@ pt <- read.csv("pacific_storms.csv")
 years <- c(2005:2018)
 years <- append(years, "All")
 at$years <- year(at$date)
+atShort <- at[at$years > 2005,]
+ID <- as.character(atShort$id)
+ID <- append(ID, "All")
 
 ui <- dashboardPage(
   dashboardHeader(title = "CS 424 Spring 2020 Project 2"),
@@ -31,6 +34,7 @@ ui <- dashboardPage(
       menuItem("", tabName = "cheapBlankSpace", icon = NULL)),
     
     selectInput("Year", "Select the year to visualize", years, selected = 2018),
+    selectInput("ID", "Select Hurricane ID to visualize", ID, selected = "All"),
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
     menuItem("About", tabName = "About")
     
@@ -107,8 +111,21 @@ server <- function(input, output) {
   # use DT to help out with the tables - https://datatables.net/reference/option/
   output$tab0 <- DT::renderDataTable(
     DT::datatable({ 
-      atYear <- at[at$years == input$Year,]
-    })
+      if( input$Year == "All" && input$ID == "All"){
+        at[at$years > 2005,]
+      }
+      else if( input$Year != "All" && input$ID == "All"){
+        atYear <- at[at$years == input$Year,]
+      }
+      else if( input$Year == "All" && input$ID != "All"){
+        atID <- at[at$id == input$ID,]
+        atID <- atID[atID$years > 2005,]
+      }
+      else{
+        atYear <- at[at$years == input$Year,]
+        atID <- atYear[atYear$id == input$ID,]
+      }
+      })
   )
   output$tab1 <- DT::renderDataTable(
     DT::datatable({ 
@@ -121,18 +138,31 @@ server <- function(input, output) {
   )
   
   output$leaf <- renderLeaflet({
-    if( input$Year == "All")  {
-      map <- leaflet( data = at)
+    if( input$Year == "All" && input$ID == "All")  {
+      map <- leaflet( data = at[at$years > 2005,])
+      Tags <- at$name
     }
     
-    else {
+    else if(input$ID != "All" && input$Year == "All"){
+      IDMap <- at[at$id == input$ID,]
+      map <- leaflet( data = IDMap[IDMap$years > 2005,])
+      Tags <- IDMap$name
+    }
+    else if(input$ID == "All" && input$Year != "All"){
       
       dataUser <- at[at$years == input$Year,]
       map <- leaflet( data = dataUser)
+      Tags <- dataUser$name
+    }
+    else{
+      dataUser <- at[at$years == input$Year,]
+      BothInput <- dataUser[dataUser$id == input$ID,]
+      map <-leaflet(data = BothInput)
+      Tags <- BothInput$name
     }
     map <- addTiles(map)
     map <- setView(map, lng = -10.047998, lat = 15.870, zoom = 3)
-    map <- addMarkers(map, lng = ~longitude, lat = ~latitude, popup = at$Names,
+    map <- addMarkers(map, lng = ~longitude, lat = ~latitude, popup = Tags,
                       clusterOptions = markerClusterOptions())
     map
   })
