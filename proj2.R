@@ -157,8 +157,8 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
       addLegend(
         title = "Categories of Hurricanes",
         position = "topright",
-        colors = c("Pink", "Purple", "Blue", "Green", "Yellow", "Orange", "Red"),
-        labels = c("Tropical Storm", "Tropical Depression", "CAT-1", "CAT-2", "CAT-3", "CAT-4", "CAT-5"),
+        colors = c("Purple","Pink", "Blue", "Green", "Yellow", "Orange", "Red"),
+        labels = c("Tropical Depression", "Tropical Storm", "CAT-1", "CAT-2", "CAT-3", "CAT-4", "CAT-5"),
         opacity = 1
       )
     
