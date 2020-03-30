@@ -10,7 +10,7 @@ library(scales)
 library(dplyr)
 
 at <- read.csv("atlantic_storms.csv")
-pt <- read.csv("pacific_storms.csv")
+pa <- read.csv("pacific_storms.csv")
 
 years <- c(2005:2018)
 
@@ -20,6 +20,7 @@ at$years <- year(at$date)
 atShort <- at[at$years > 2005,]
 ID <- as.character(atShort$id)
 ID <- append(ID, "All")
+
 categoryknot <- at
 names(categoryknot)[9] = "knots"
 categoryknot$knots <- lapply(categoryknot$knots, function(x){
@@ -71,6 +72,60 @@ categoryknot2$category <- as.character(categoryknot2$category)
 categorytable <- table(a<-(categoryknot2$category))
 categorytable <- as.data.frame(categorytable)
 
+#start of Pacific category code
+pacategoryknot <- pa
+names(pacategoryknot)[9] = "knots"
+
+pacategoryknot$knots <- lapply(pacategoryknot$knots, function(x){
+  if (x <= 33){
+    x <- 6
+  }
+  else if(x >= 34 && x <= 63){
+    x <- 7
+  }
+  else if(x >= 64 && x <= 82){
+    
+    x <- 1
+  }
+  else if(x >= 83 && x <= 95){
+    
+    x <- 2
+  }
+  else if(x >= 96 && x <= 112){
+    
+    x <- 3
+  }
+  else if(x >= 113 && x <= 136){
+    
+    x <- 4
+  }
+  else if(x >= 137){
+    
+    x <- 5
+  }
+  else{
+    x <- x
+  }
+})
+pacategoryknot2 <-pacategoryknot
+pacategoryknot2$knots <- as.character(pacategoryknot2$knots)
+
+pacategoryknot2$knots <- lapply(pacategoryknot2$knots, function(x){
+  if(x == "6"){
+    x <- "Tropical Depression"
+  }
+  else if( x == "7"){
+    x <- "Tropical Storm"
+  }
+  else{
+    x <- x
+  }
+})
+names(pacategoryknot2)[9] = "category"
+
+pacategoryknot2$category <- as.character(pacategoryknot2$category)
+pacategorytable <- table(a<-(pacategoryknot2$category))
+pacategorytable <- as.data.frame(pacategorytable)
 
 ui <- dashboardPage(
   dashboardHeader(title = "CS 424 Spring 2020 Project 2"),
@@ -167,8 +222,55 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
 
   })
   
+  doSomeReactiveThings2 <- reactive({subset(pacategoryknot2, year(pacategoryknot2$date) == input$Year)})
+  getColor2 <- function(pacategoryknot){
+    sapply(pacategoryknot$knots, function(knots){
+      if(knots==1){
+        "blue"
+      }else if(knots==2){
+        "green"
+      }else if(knots==3){
+        "yellow"
+      }else if(knots==4){
+        "orange"
+      }else if(knots==5){
+        "red"
+      }else if(knots==6){
+        "pink"
+      }else{
+        "purple"
+      }
+    })
+  }
+  icons2 <- awesomeIcons(
+    icon = 'ios-close',
+    iconColor = 'black',
+    library = 'ion',
+    markerColor = getColor(pacategoryknot)
+  )
   output$pacificMap <- renderLeaflet({
+    reactiveYear2 <- doSomeReactiveThings2()
+    m <- leaflet(reactiveYear2) %>% 
+      addTiles() %>%
+      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons2,clusterOptions = markerClusterOptions() , popup = ~category,label =~name) 
     
+    for (i in unique(pacategoryknot2$id)) {
+      m <- m %>%
+        
+        addPolylines(data = reactiveYear2[reactiveYear2$id == i, ], 
+                     lng = ~longitude, 
+                     lat = ~latitude)
+    }
+    m <- m %>%
+      addLegend(
+        title = "Categories of Hurricanes",
+        position = "topright",
+        colors = c("Purple","Pink", "Blue", "Green", "Yellow", "Orange", "Red"),
+        labels = c("Tropical Depression", "Tropical Storm", "CAT-1", "CAT-2", "CAT-3", "CAT-4", "CAT-5"),
+        opacity = 1
+      )
+    
+    m  
   })
 }
 
