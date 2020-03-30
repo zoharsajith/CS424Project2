@@ -112,19 +112,19 @@ ui <- dashboardPage(
 server <- function(input, output) {
 doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date) == input$Year)})
   
-  getColor <- function(categoryknot2){
-    sapply(categoryknot2$knots, function(knots){
-      if(knots=="1"){
+  getColor <- function(categoryknot){
+    sapply(categoryknot$knots, function(knots){
+      if(knots==1){
         "blue"
-      }else if(knots=="2"){
+      }else if(knots==2){
         "green"
-      }else if(knots=="3"){
+      }else if(knots==3){
         "yellow"
-      }else if(knots=="4"){
+      }else if(knots==4){
         "orange"
-      }else if(knots=="5"){
+      }else if(knots==5){
         "red"
-      }else if(knots=="Tropical Storm"){
+      }else if(knots==6){
         "pink"
       }else{
         "purple"
@@ -136,15 +136,15 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
     icon = 'ios-close',
     iconColor = 'black',
     library = 'ion',
-    markerColor = getColor(categoryknot2)
+    markerColor = getColor(categoryknot)
   )
 
 
   output$atlanticMap <- renderLeaflet({
     reactiveYear <- doSomeReactiveThings()
-    m <- leaflet(df) %>% 
+    m <- leaflet(reactiveYear) %>% 
       addTiles() %>%
-      addAwesomeMarkers(data = reactiveYear, lng=~longitude, lat=~latitude, popup = ~category,label =~name) 
+      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons,clusterOptions = markerClusterOptions() , popup = ~category,label =~name) 
     
     for (i in unique(categoryknot2$id)) {
       m <- m %>%
@@ -153,7 +153,17 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
                      lng = ~longitude, 
                      lat = ~latitude)
     }
+    m <- m %>%
+      addLegend(
+        title = "Categories of Hurricanes",
+        position = "topright",
+        colors = c("Pink", "Purple", "Blue", "Green", "Yellow", "Orange", "Red"),
+        labels = c("Tropical Storm", "Tropical Depression", "CAT-1", "CAT-2", "CAT-3", "CAT-4", "CAT-5"),
+        opacity = 1
+      )
+    
     m
+    
 
   })
   
