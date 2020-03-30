@@ -197,35 +197,73 @@ ui <- dashboardPage(
              ),
           
           fluidRow(
-            box(title = "Atlantic Unique Hurricanes Per Year", solidHeader = TRUE, width = 6,
-                plotOutput("uniquehp", height= 400)
+            column(6,
+                mainPanel(width = 12,
+                    tabsetPanel(
+                        tabPanel("Graph",
+                            box(title = "Atlantic Unique Hurricanes Per Year", solidHeader = TRUE, width = 12,
+                            plotOutput("uniquehp", height= 400)
+                            ),
+                        ),
+                        tabPanel("Table",
+                            box(title = "Atlantic Unique Hurricanes Per Year Table", solidHeader = TRUE, width = 12,
+                            DT::dataTableOutput("uniquehptb", height= 200)
+                            )
+                        )
+                    )
+                )
             ),
-            box(title = "Atlantic Unique Hurricanes Per Year Table", solidHeader = TRUE, width = 6,
-                DT::dataTableOutput("uniquehptb", height= 200)
+            column(6,
+                mainPanel(width = 12,
+                    tabsetPanel(
+                        tabPanel("Graph",
+                            box(title = "Pacific Unique Hurricanes Per Year", solidHeader = TRUE, width = 12,
+                            plotOutput("puniquehp", height= 400)
+                            )
+                        ),
+                        tabPanel("Table",
+                            box(title = "Pacific Unique Hurricanes Per Year Table", solidHeader = TRUE, width = 12,
+                            DT::dataTableOutput("puniquehptb", height= 200)
+                            )
+                        )
+                    )         
+                )
             )
+            
+            
           ),
           fluidRow(
-            box(title = "Pacific Unique Hurricanes Per Year", solidHeader = TRUE, width = 6,
-                plotOutput("puniquehp", height= 400)
+            column(6,
+                mainPanel(width = 12,
+                    tabsetPanel(
+                        tabPanel("Graph",
+                            box(title = "Atlantic Markers Per Category", solidHeader = TRUE, width = 12,
+                            plotOutput("markerspc", height= 400)
+                            )
+                        ),
+                        tabPanel("Table",
+                            box(title = "Atlantic Markers Per Category Table", solidHeader = TRUE, width = 12,
+                            DT::dataTableOutput("markerspctb", height= 200)
+                            )
+                        )
+                    )        
+                )
             ),
-            box(title = "Pacific Unique Hurricanes Per Year Table", solidHeader = TRUE, width = 6,
-                DT::dataTableOutput("puniquehptb", height= 200)
-            )
-          ),
-          fluidRow(
-            box(title = "Atlantic Markers Per Category", solidHeader = TRUE, width = 6,
-                plotOutput("markerspc", height= 400)
-            ),
-            box(title = "Atlantic Markers Per Category Table", solidHeader = TRUE, width = 6,
-                DT::dataTableOutput("markerspctb", height= 200)
-            )
-          ),
-          fluidRow(
-            box(title = "Pacific Markers Per Category", solidHeader = TRUE, width = 6,
-                plotOutput("pmarkerspc", height= 400)
-            ),
-            box(title = "Pacific Markers Per Category Table", solidHeader = TRUE, width = 6,
-                DT::dataTableOutput("pmarkerspctb", height= 200)
+            column(6,
+                mainPanel(width = 12,
+                    tabsetPanel(
+                        tabPanel("Graph",
+                            box(title = "Pacific Markers Per Category", solidHeader = TRUE, width = 12,
+                            plotOutput("pmarkerspc", height= 400)
+                            )    
+                        ),
+                        tabPanel("able",
+                            box(title = "Pacific Markers Per Category Table", solidHeader = TRUE, width = 12,
+                            DT::dataTableOutput("pmarkerspctb", height= 200)
+                          )
+                        )
+                    )
+                )
             )
           ),
       ),
