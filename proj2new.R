@@ -17,9 +17,13 @@ years <- c(2005:2018)
 
 #years <- append(years, "All")
 at$years <- year(at$date)
+pa$years <- year(pa$date)
 atShort <- at[at$years > 2005,]
 ID <- as.character(atShort$id)
 ID <- append(ID, "All")
+paShort <- pa[pa$years > 2005,]
+IDPA <- as.character(paShort$id)
+IDPA <- append(IDPA, "All")
 
 
 
@@ -180,7 +184,8 @@ ui <- dashboardPage(
       menuItem("", tabName = "bruh", icon=NULL),
       
       selectInput("Year", "Select the year", years, selected = 2018),
-      selectInput("ID", "Select Hurricane ID to visualize", ID, selected = "All"),
+      selectInput("ID", "Select Atlantic Hurricane ID to visualize", ID, selected = "All"),
+      selectInput("IDPA", "Select Pacific Hurricane ID to visualize", IDPA, selected = "All"),
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
       menuItem("About", tabName = "About")
     )
@@ -257,7 +262,7 @@ ui <- dashboardPage(
                             plotOutput("pmarkerspc", height= 400)
                             )    
                         ),
-                        tabPanel("able",
+                        tabPanel("Table",
                             box(title = "Pacific Markers Per Category Table", solidHeader = TRUE, width = 12,
                             DT::dataTableOutput("pmarkerspctb", height= 200)
                           )
@@ -277,7 +282,8 @@ ui <- dashboardPage(
 
 
 server <- function(input, output) {
-doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date) == input$Year)})
+  doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date) == input$Year)})
+  doSomeIDReactive <- reactive({subset(categoryknot2, categoryknot2$id == input$ID)})
   
   getColor <- function(categoryknot){
     sapply(categoryknot$knots, function(knots){
@@ -305,18 +311,35 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
     library = 'ion',
     markerColor = getColor(categoryknot)
   )
+  
 
 
   output$atlanticMap <- renderLeaflet({
     reactiveYear <- doSomeReactiveThings()
-    m <- leaflet(reactiveYear) %>% 
-      addTiles() %>%
-      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons,clusterOptions = markerClusterOptions() , popup = ~category,label =~name) 
+    reactiveID <- doSomeIDReactive()
     
-    for (i in unique(categoryknot2$id)) {
+    
+    if(input$ID != "All"){
+      l <- reactiveID
+      m <- leaflet(l)
+    }else{
+      l <- reactiveYear
+      m <- leaflet(l)
+    }
+  
+    
+    
+    
+    
+    
+    m <- m %>% 
+      addTiles(group = "OpenStreetMap") %>%
+      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons, popup = ~category,label =~name) 
+    
+    for (i in unique(l$id)) {
       m <- m %>%
         
-        addPolylines(data = reactiveYear[reactiveYear$id == i, ], 
+        addPolylines(data = l[l$id == i, ], 
                      lng = ~longitude, 
                      lat = ~latitude)
     }
@@ -327,6 +350,10 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
         colors = c("Purple","Pink", "Blue", "Green", "Yellow", "Orange", "Red"),
         labels = c("Tropical Depression", "Tropical Storm", "CAT-1", "CAT-2", "CAT-3", "CAT-4", "CAT-5"),
         opacity = 1
+      ) %>%
+      addProviderTiles("Esri.NatGeoWorldMap", group = "NatGeo World Map") %>%
+      addLayersControl(
+        baseGroups = c("OpenStreetMap", "NatGeo World Map")
       )
     
     m
@@ -335,6 +362,8 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
   })
   
   doSomeReactiveThings2 <- reactive({subset(pacategoryknot2, year(pacategoryknot2$date) == input$Year)})
+  doSomeIDReactive2 <- reactive({subset(pacategoryknot2, pacategoryknot2$id == input$IDPA)})
+  
   getColor2 <- function(pacategoryknot){
     sapply(pacategoryknot$knots, function(knots){
       if(knots==1){
@@ -361,15 +390,31 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
     markerColor = getColor(pacategoryknot)
   )
   output$pacificMap <- renderLeaflet({
-    reactiveYear2 <- doSomeReactiveThings2()
-    m <- leaflet(reactiveYear2) %>% 
-      addTiles() %>%
-      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons2,clusterOptions = markerClusterOptions() , popup = ~category,label =~name) 
     
-    for (i in unique(pacategoryknot2$id)) {
+    reactiveYear2 <- doSomeReactiveThings2()
+    reactiveID2 <- doSomeIDReactive2()
+    
+    
+    if(input$IDPA != "All"){
+      l <- reactiveID2
+      m <- leaflet(l)
+    }else{
+      l <- reactiveYear2
+      m <- leaflet(l)
+    }
+    
+    
+    
+    
+    
+    m <- m %>% 
+      addTiles() %>%
+      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons2, popup = ~category,label =~name) 
+    
+    for (i in unique(l$id)) {
       m <- m %>%
         
-        addPolylines(data = reactiveYear2[reactiveYear2$id == i, ], 
+        addPolylines(data = l[l$id == i, ], 
                      lng = ~longitude, 
                      lat = ~latitude)
     }
@@ -380,6 +425,10 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
         colors = c("Purple","Pink", "Blue", "Green", "Yellow", "Orange", "Red"),
         labels = c("Tropical Depression", "Tropical Storm", "CAT-1", "CAT-2", "CAT-3", "CAT-4", "CAT-5"),
         opacity = 1
+      ) %>%
+      addProviderTiles("Esri.NatGeoWorldMap", group = "NatGeo World Map") %>%
+      addLayersControl(
+        baseGroups = c("OpenStreetMap", "NatGeo World Map")
       )
     
     m  
@@ -395,6 +444,7 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
   })
   
   output$uniquehptb <- DT::renderDataTable({
+    names(newyear)[1] = "Years"
     newyear
     
   })
@@ -408,6 +458,7 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
   })
   
   output$puniquehptb <- DT::renderDataTable({
+    names(panewyear)[1] = "Years"
     panewyear
     
   })
@@ -422,6 +473,7 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
   })
   
   output$markerspctb <- DT::renderDataTable({
+    names(categorytable)[1] = "Category"
     categorytable
     
   })
@@ -436,6 +488,7 @@ doSomeReactiveThings <- reactive({subset(categoryknot2, year(categoryknot2$date)
   })
   
   output$pmarkerspctb <- DT::renderDataTable({
+    names(pacategorytable)[1] = "Category"
     pacategorytable
     
   })
