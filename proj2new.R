@@ -61,6 +61,7 @@ categoryknot$knots <- lapply(categoryknot$knots, function(x){
     x <- x
   }
 })
+categoryknot$knots <- as.numeric(categoryknot$knots)
 categoryknot2 <-categoryknot
 categoryknot2$knots <- as.character(categoryknot2$knots)
 categoryknot2$knots <- lapply(categoryknot2$knots, function(x){
@@ -299,7 +300,7 @@ server <- function(input, output) {
         "red"
       }else if(knots==6){
         "pink"
-      }else{
+      }else if(knots==7){
         "purple"
       }
     })
@@ -334,7 +335,7 @@ server <- function(input, output) {
     
     m <- m %>% 
       addTiles(group = "OpenStreetMap") %>%
-      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons, popup = ~category,label =~name) 
+      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons, popup = ~date,label =~name) 
     
     for (i in unique(l$id)) {
       m <- m %>%
@@ -409,7 +410,7 @@ server <- function(input, output) {
     
     m <- m %>% 
       addTiles() %>%
-      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons2, popup = ~category,label =~name) 
+      addAwesomeMarkers(lng=~longitude, lat=~latitude, icon=icons2, popup = ~date,label =~name) 
     
     for (i in unique(l$id)) {
       m <- m %>%
